@@ -11,7 +11,7 @@ module.exports = defineConfig({
           console.log('Cypress is connecting to socket server under name %s', name)
           socket = io('http://localhost:3001')
 
-          socket.emit("send_message", { message: "Ghost" })
+          socket.emit("new_player", { name })
 
           return null
         },
