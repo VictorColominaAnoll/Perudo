@@ -1,4 +1,5 @@
-import { Row, Col, Button } from "antd";
+import { Button, Space, Image } from "antd";
+import { Row, Col } from "react-bootstrap"
 import { List } from "antd";
 import io from 'socket.io-client';
 import { useState, useEffect } from "react";
@@ -7,19 +8,36 @@ const socket = io.connect("http://localhost:3001");
 
 export function Game() {
 
-    const [players, setPlayer] = useState([])
+    const [currentTurn, setTurn] = useState(1)
+    const [dices, setDices] = useState([])
+    const [players, setPlayers] = useState([])
     const [currentPlayer, setCurrentPlayer] = useState([])
 
     useEffect(() => {
         socket.emit("get_game_data")
-        socket.on('update_game_data', ({ current_player, players }) => {
+        socket.on('update_game_data', ({ current_player, players, turn }) => {
             setCurrentPlayer(current_player)
-            setPlayer(players)
+            setPlayers(players.map(({ name }) => name))
+            setDices(getPlayerDices(current_player, players))
+            setTurn(turn)
+            console.log(turn)
+
         })
     }, [socket])
 
     const nextTurn = () => {
         socket.emit("next_turn")
+    }
+
+    const getPlayerDices = (name, data) => {
+        let dices = []
+        for (let i = 0; i < data.length; i++) {
+            if (data[i].name === name) {
+                dices = data[i].dices;
+            }
+        }
+
+        return dices;
     }
 
     return (
@@ -68,6 +86,16 @@ export function Game() {
                                     <Row>
                                         <Button type="primary" onClick={() => nextTurn()}>Apostar</Button>
                                     </Row>
+                                    {
+                                        currentTurn === 1
+                                            ? (<></>)
+                                            : (
+                                                <Row>
+                                                    <Button type="primary">OBJECTION!</Button>
+                                                </Row>
+                                            )
+
+                                    }
                                 </div>
                             )
                             : (
@@ -77,7 +105,19 @@ export function Game() {
                             )
                     }
                 </Col>
-                <Col></Col>
+                <Col md={4}>
+                    <div data-testid="player-dices">
+                        <Space>
+                            {
+                                dices.map(({ id, value }) => {
+                                    return (
+                                        <Image id={"dice-" + (id + 1)} src={process.env.PUBLIC_URL + "/dice-" + value + ".jpg"} />
+                                    )
+                                })
+                            }
+                        </Space>
+                    </div>
+                </Col>
             </Row>
         </>
     )

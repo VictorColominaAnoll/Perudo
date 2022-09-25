@@ -8,7 +8,8 @@ app.use(cors());
 
 const server = http.createServer(app);
 
-const players = [];
+let turn = 1;
+let players = [];
 let currentPlayerCounter = 0;
 
 const io = new Server(server, {
@@ -18,23 +19,52 @@ const io = new Server(server, {
     }
 });
 
+server.listen(3001, () => {
+    console.log("RUNNING");
+})
+
 io.on("connection", (socket) => {
     socket.on("new_player", (data) => {
-        console.log("Received", data)
         addNewPlayer(data.name)
+
+        console.log("NEW PLAYER", data)
+        console.log("PLAYERS", players)
+        console.log("--------------")
+
         socket.broadcast.emit("receive_message", data)
     })
 
     socket.on("get_game_data", () => {
-        console.log(players)
-        socket.emit("update_game_data", { current_player: players[currentPlayerCounter], players })
+        const newData = getCurrentGameData()
+
+        console.log("GET DATA", newData)
+
+        socket.emit("update_game_data", newData)
     })
 
     socket.on("next_turn", () => {
+        turn += 1;
         currentPlayerCounter = getNewCurrentPlayer();
-        socket.emit("update_game_data", { current_player: players[currentPlayerCounter], players })
+        const newData = getCurrentGameData()
+        console.log("NEXT TURN", newData)
+        io.emit("update_game_data", newData)
+    })
+
+    socket.on("reset_game", () => {
+        turn = 1;
+        players = [];
+        currentPlayerCounter = 0;
     })
 })
+
+const getCurrentGameData = () => {
+    return {
+        current_player: players[currentPlayerCounter].name,
+        players,
+        turn
+    }
+};
+
 
 function getNewCurrentPlayer() {
     let newValue = currentPlayerCounter + 1;
@@ -43,11 +73,32 @@ function getNewCurrentPlayer() {
     return newValue;
 }
 
-const addNewPlayer = (name) => {
-    if (players.lastIndexOf(name) === -1)
-        players.push(name);
+const addNewPlayer = (newPlayerName) => {
+    if (!doesPlayerExist(newPlayerName))
+        players.push({ name: newPlayerName, dices: getRandomDices() });
 }
 
-server.listen(3001, () => {
-    console.log("RUNNING");
-})
+const doesPlayerExist = (newPlayerName) => {
+    let result = false;
+    for (let i = 0; i < players.length; i++) {
+        if (players[i].name === newPlayerName) {
+            result = true;
+            i = players.length
+        }
+    }
+
+    return result;
+}
+
+const getRandomDices = () => {
+    const result = []
+
+    for (let id = 0; id < 5; id++) {
+        result.push({
+            id,
+            value: Math.floor(Math.random() * (6 - 1 + 1) + 1)
+        })
+    }
+
+    return result
+}

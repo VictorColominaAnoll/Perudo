@@ -15,6 +15,20 @@ module.exports = defineConfig({
 
           return null
         },
+        ghostTurn() {
+          socket = io('http://localhost:3001')
+
+          socket.emit("next_turn")
+          
+          return null;
+        },
+        reset() {
+          socket = io('http://localhost:3001')
+
+          socket.emit("reset_game")
+          
+          return null;
+        }
       })
     },
   },

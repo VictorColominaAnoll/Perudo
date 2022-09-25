@@ -1,0 +1,20 @@
+version: "3.5"
+services:
+  server:
+    build: ./server
+    container_name: perudo-server
+    ports:
+      - 3001:3001
+    networks:
+      - app-network
+  client:
+    build: ./client
+    container_name: perudo-client
+    ports:
+      - 3000:3000
+    networks:
+      - app-network
+      
+networks:
+  app-network:
+    driver: bridge
