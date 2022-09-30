@@ -2,6 +2,7 @@ describe('When a user access the game', () => {
   const name = `player_${Cypress._.random(1000)}`
 
   it('should see the players list', () => {
+    cy.task('reset')
     cy.task('connect', 'Ghost')
     cy.wait(300);
 

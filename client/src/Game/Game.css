@@ -1,0 +1,5 @@
+select, input {
+    padding: 5px 9px;
+    width: 25%;
+    border-radius: 3px;
+}

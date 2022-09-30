@@ -1,7 +1,7 @@
 describe('When is the user s turn', () => {
 
     beforeEach(() => {
-        cy.task('reset')
+        cy.task('reset');
 
         localStorage.setItem("username", "player");
         cy.task('connect', 'player');
@@ -50,15 +50,18 @@ describe('When is the user s turn', () => {
         cy.get("#dice-6").should('not.exist');
     })
 
-    it.only('should show the REJECTION button if round > 1', () => {
-        cy.findByText('OBJECTION!').should('not.exist')
+    it('should show the REJECTION button if round > 1', () => {
+        cy.findByText('OBJECTION!').should('not.exist');
         
         cy.findByTestId("selector-dice-suit").select("5");
         cy.findByTestId("input-dice-number").type("6");
         cy.findByText("Apostar").click();
         cy.task('ghostTurn');
 
-        cy.findByText('OBJECTION!').click()
+        cy.findByText('OBJECTION!').click();
+
+        cy.findByTestId('game-board').should('not.exist');
+        cy.findByText('Ronda terminada').should('be.visible')
     })
 
 })
